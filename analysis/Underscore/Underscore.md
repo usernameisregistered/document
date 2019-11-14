@@ -138,3 +138,61 @@ function map(obj, iteratee, context){
     return results;
 }
 ```
+
+> Reduce的实现
+```
+funciton reduce(dir){
+    let reducer  = function(obj, iteratee, memo, initial){
+        var keys = !isArrayLike(obj) && keys(obj),
+        length = (keys || obj).length,
+        index = dir > 0 ? 0 : length - 1;
+        if (!initial) {
+            memo = obj[keys ? keys[index] : index];
+            index += dir;
+        }
+        for (; index >= 0 && index < length; index += dir) {
+            let currentKey = keys ? keys[index] : index;
+            memo = iteratee(memo, obj[currentKey], currentKey, obj);
+        }
+        return memo;
+    }
+
+    return function(obj, iteratee, memo, context) {
+      let initial = arguments.length >= 3;
+      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
+    };
+}
+
+reduceLeft = reduce(1)
+
+reduceRight = reduce(-1)
+```
+
+> findIndex和findLastIndex的实现
+```
+function createIndexFinder(dir){
+    return function(array, predicate, context) {
+        predicate = cb(predicate, context);
+        var length = getLength(array);
+        var index = dir > 0 ? 0 : length - 1;
+        for (; index >= 0 && index < length; index += dir) {
+            if (predicate(array[index], index, array)) return index;
+        }
+        return -1;
+    };
+}
+findIndex = createPredicateIndexFinder(1);
+findLastIndex = createPredicateIndexFinder(-1);
+```
+
+> filter 的实现
+```
+function filter (obj, predicate, context) {
+    var results = [];
+    predicate = cb(predicate, context);
+    each(obj, function(value, index, list) {
+      if (predicate(value, index, list)) results.push(value);
+    });
+    return results;
+}
+```
